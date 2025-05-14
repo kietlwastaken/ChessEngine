@@ -34,6 +34,33 @@ class ChessBoard:
         self.board[row][col] = piece
 
 
+class piece:
+    def __init__(self, name):
+        self.name = name
+        self.colour = None
+
+    def valid_moves(self):
+        pass
+
+class Pawn(piece):
+    def __init__(self, colour):
+        super().__init__('P', colour)
+
+    def valid_moves(self, position, board):
+        row, col = position
+        moves = []
+
+        direction = 1 if self.colour == 'white' else -1
+
+        # normal foward 1 move
+        if 0 <= row + direction < 8 and board[row + direction][col] == ' ':
+            moves.append((row + direction, col))
+
+        # first move double
+        if (self.colour == 'white' and row == 6) or (self.colour == 'black' and row == 1):
+            if board[row + direction * 2][col] == ' ':
+                moves.append((row + direction * 2, col))
+
 
 board = ChessBoard()
 print(board())
