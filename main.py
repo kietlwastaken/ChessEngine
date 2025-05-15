@@ -35,7 +35,7 @@ class ChessBoard:
         self.board[row][col] = piece
 
 
-class piece:
+class Piece:
     def __init__(self, name):
         self.name = name
         self.colour = None
@@ -43,7 +43,7 @@ class piece:
     def valid_moves(self):
         pass
 
-class Pawn(piece):
+class Pawn(Piece):
     def __init__(self, colour):
         super().__init__('P', colour)
 
@@ -71,7 +71,7 @@ class Pawn(piece):
 
         return moves
 
-class Knight(piece):
+class Knight(Piece):
     def __init__(self, colour):
         super().__init__('N', colour)
 
