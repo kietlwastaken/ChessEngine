@@ -2,27 +2,27 @@ import tkinter as tk
 
 class ChessBoard:
 
+    
+
     def __init__(self):
         self.board = [
-                ["R", "N", "B", "Q", "K", "B", "N", "R"],
-                ["P", "P", "P", "P", "P", "P", "P", "P"],
-                [" ", " ", " ", " ", " ", " ", " ", " "],
-                [" ", " ", " ", " ", " ", " ", " ", " "],
-                [" ", " ", " ", " ", " ", " ", " ", " "],
-                [" ", " ", " ", " ", " ", " ", " ", " "],
-                ["P", "P", "P", "P", "P", "P", "P", "P"],
-                ["R", "N", "B", "Q", "K", "B", "N", "R"]
-                ]
+            [Rook("black"), Knight("black"), Bishop("black"), Queen("black"), King("black"), Bishop("black"), Knight("black"), Rook("black")],
+            [Pawn("black")]*8,
+            [" "] * 8, [" "] * 8, [" "] * 8, [" "] * 8, 
+            [Pawn("white")]*8,
+            [Rook("white"), Knight("white"), Bishop("white"), Queen("white"), King("white"), Bishop("white"), Knight("white"), Rook("white")]
+        ]
+
         self.file_to_col = {'A': 0, 'B': 1, 'C': 2, 'D': 3,
                             'E': 4, 'F': 5, 'G': 6, 'H': 7
                             }
+
     
     def __call__(self, notation=None):
-        if notation == None:
+        if notation is None:
             result = ""
             for row in self.board:
-                result += " ".join(row) + "\n"
-            
+                result += " ".join(str(cell) if isinstance(cell, Piece) else cell for cell in row) + "\n"
             return result.rstrip("\n")
         else:
             col = self.file_to_col[notation[0].upper()]
@@ -46,8 +46,12 @@ class Piece:
         self.name = name
         self.colour = colour
 
+    def __str__(self):
+        return self.name.upper() if self.colour == 'white' else self.name.lower()
+
     def valid_moves(self):
         pass
+
 
 class Pawn(Piece):
     def __init__(self, colour):
@@ -83,15 +87,114 @@ class Knight(Piece):
 
     def valid_moves(self, position, board):
         row, col = position
-        offsets = [(1,2),(1,-2),(-1,2),(-1,-2),(2,1),(2,-1),(-2,1),(-2,-1)]
         moves = []
 
-        for dr, dc in offsets:
-            r, c = row + dr, col + dc
-            if 0 <= r < 8 and 0 <= c < 8:
-                moves.append((r, c))
+        # Possible L-shaped moves
+        knight_moves = [(-2, -1), (-2, 1), (2, -1), (2, 1), 
+                        (-1, -2), (-1, 2), (1, -2), (1, 2)]
+
+        for move in knight_moves:
+            new_row = row + move[0]
+            new_col = col + move[1]
+            if 0 <= new_row < 8 and 0 <= new_col < 8:
+                if board[new_row][new_col] == ' ' or board[new_row][new_col].colour != self.colour:
+                    moves.append((new_row, new_col))
+
 
         return moves
+    
+class Bishop(Piece):
+    def __init__(self, colour):
+        super().__init__('B', colour)
+
+    def valid_moves(self, position, board):
+        row, col = position
+        moves = []
+
+        # Diagonal moves
+        directions = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
+
+        for direction in directions:
+            for i in range(1, 8):
+                new_row = row + direction[0] * i
+                new_col = col + direction[1] * i
+                if 0 <= new_row < 8 and 0 <= new_col < 8:
+                    if board[new_row][new_col] == ' ':
+                        moves.append((new_row, new_col))
+                    elif board[new_row][new_col].colour != self.colour:
+                        moves.append((new_row, new_col))
+                        break
+                    else:
+                        break
+                else:
+                    break
+
+        return moves
+    
+class Rook(Piece):
+    def __init__(self, colour):
+        super().__init__('R', colour)
+
+    def valid_moves(self, position, board):
+        row, col = position
+        moves = []
+
+        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+
+        for direction in directions:
+            for i in range(1,8):
+                new_row = row + direction[0] * i
+                new_col = col + direction[1] * i
+                if 0 <= new_row < 8 and 0 <= new_col < 8:
+                    if board[new_row][new_col] == ' ':
+                        moves.append((new_row, new_col))
+                    elif board[new_row][new_col].colour != self.colour:
+                        moves.append((new_row, new_col))
+                        break
+
+        return moves
+    
+class Queen(Piece):
+    def __init__(self, colour):
+        super().__init__('Q', colour)
+
+    def valid_moves(self, position, board):
+        row, col = position
+        moves = []
+
+        rook = Rook(self.colour)
+        bishop = Bishop(self.colour)
+
+        moves.extend(rook.valid_moves(position, board))
+        moves.extend(bishop.valid_moves(position, board))
+
+        return moves
+
+class King(Piece):
+    def __init__(self, colour):
+        super().__init__('K', colour)
+        
+    def valid_moves(self, position, board):
+        row, col = position
+        moves = []
+
+        # Possible king moves
+        king_moves = [
+                    (-1, -1), (-1, 0), (-1, 1), (0, -1), 
+                    (0, 1), (1, -1), (1, 0), (1, 1)
+                    ]
+
+        for move in king_moves:
+            new_row = row + move[0]
+            new_col = col + move[1]
+            if 0 <= new_row < 8 and 0 <= new_col < 8:
+                if board[new_row][new_col] == ' ' or board[new_row][new_col].colour != self.colour:
+                    moves.append((new_row, new_col))
+
+        return moves
+
+
+
 
 
 board = ChessBoard()
