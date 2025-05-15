@@ -71,7 +71,7 @@ class Pawn(piece):
 
         return moves
 
-class Knight(Piece):
+class Knight(piece):
     def __init__(self, colour):
         super().__init__('N', colour)
 
@@ -86,4 +86,6 @@ class Knight(Piece):
 
 
 board = ChessBoard()
+knight = Knight('white')
 print(board())
+Knight.valid_moves('C1',board)
