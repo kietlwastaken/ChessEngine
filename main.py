@@ -75,7 +75,14 @@ class Knight(Piece):
     def __init__(self, colour):
         super().__init__('N', colour)
 
-    def valid_moves(self, position, board)
+    def valid_moves(self, position, board):
+        moves = [(1,2),(1,-2),(-1,2),(-1,-2),(2,1),(2,-1),(-2,1),(-2,-1)]
+
+        for move in moves:
+            if (not 0 <= move[1] < 8) and (not 0 <= move[0] < 8):
+                moves.remove(move)
+
+        return moves
 
 
 board = ChessBoard()
