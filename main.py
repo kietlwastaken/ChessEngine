@@ -3,14 +3,15 @@ import tkinter as tk
 class ChessBoard:
 
     def __init__(self):
-        self.board = [["R", "k", "B", "Q", "K", "B", "k", "R"],
+        self.board = [
+                ["R", "N", "B", "Q", "K", "B", "N", "R"],
                 ["P", "P", "P", "P", "P", "P", "P", "P"],
                 [" ", " ", " ", " ", " ", " ", " ", " "],
                 [" ", " ", " ", " ", " ", " ", " ", " "],
                 [" ", " ", " ", " ", " ", " ", " ", " "],
                 [" ", " ", " ", " ", " ", " ", " ", " "],
                 ["P", "P", "P", "P", "P", "P", "P", "P"],
-                ["R", "k", "B", "Q", "K", "B", "k", "R"]
+                ["R", "N", "B", "Q", "K", "B", "N", "R"]
                 ]
         self.file_to_col = {'A': 0, 'B': 1, 'C': 2, 'D': 3,
                             'E': 4, 'F': 5, 'G': 6, 'H': 7
@@ -60,6 +61,21 @@ class Pawn(piece):
         if (self.colour == 'white' and row == 6) or (self.colour == 'black' and row == 1):
             if board[row + direction * 2][col] == ' ':
                 moves.append((row + direction * 2, col))
+        
+        # taking diagonal
+        if 0 <= row + direction < 8:
+            if 0 <= col - 1 < 8 and grid[row + direction][col - 1] != ' ':
+                moves.append((row + direction, col - 1))
+            if 0 <= col + 1 < 8 and grid[row + direction][col +1] != ' ':
+                moves.append((row + direction, col + 1))
+
+        return moves
+
+class Knight(Piece):
+    def __init__(self, colour):
+        super().__init__('N', colour)
+
+    def valid_moves(self, position, board)
 
 
 board = ChessBoard()
