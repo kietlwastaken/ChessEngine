@@ -28,6 +28,12 @@ class ChessBoard:
             col = self.file_to_col[notation[0].upper()]
             row = 8 - int(notation[1])
             return (self.board[row][col])
+
+    def pos(self, notation):
+        col = self.file_to_col[notation[0].upper()]
+        row = 8 - int(notation[1])
+        return (row, col)
+
         
     def set(self, notation, piece):
         col = self.file_to_col[notation[0].upper()]
@@ -36,9 +42,9 @@ class ChessBoard:
 
 
 class Piece:
-    def __init__(self, name):
+    def __init__(self, name, colour):
         self.name = name
-        self.colour = None
+        self.colour = colour
 
     def valid_moves(self):
         pass
@@ -64,9 +70,9 @@ class Pawn(Piece):
         
         # taking diagonal
         if 0 <= row + direction < 8:
-            if 0 <= col - 1 < 8 and grid[row + direction][col - 1] != ' ':
+            if 0 <= col - 1 < 8 and board[row + direction][col - 1] != ' ':
                 moves.append((row + direction, col - 1))
-            if 0 <= col + 1 < 8 and grid[row + direction][col +1] != ' ':
+            if 0 <= col + 1 < 8 and board[row + direction][col +1] != ' ':
                 moves.append((row + direction, col + 1))
 
         return moves
@@ -76,11 +82,14 @@ class Knight(Piece):
         super().__init__('N', colour)
 
     def valid_moves(self, position, board):
-        moves = [(1,2),(1,-2),(-1,2),(-1,-2),(2,1),(2,-1),(-2,1),(-2,-1)]
+        row, col = position
+        offsets = [(1,2),(1,-2),(-1,2),(-1,-2),(2,1),(2,-1),(-2,1),(-2,-1)]
+        moves = []
 
-        for move in moves:
-            if (not 0 <= move[1] < 8) and (not 0 <= move[0] < 8):
-                moves.remove(move)
+        for dr, dc in offsets:
+            r, c = row + dr, col + dc
+            if 0 <= r < 8 and 0 <= c < 8:
+                moves.append((r, c))
 
         return moves
 
@@ -88,4 +97,4 @@ class Knight(Piece):
 board = ChessBoard()
 knight = Knight('white')
 print(board())
-Knight.valid_moves('C1',board)
+print(knight.valid_moves(board.pos("B1"), board.board))
