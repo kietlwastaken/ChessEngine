@@ -1,4 +1,6 @@
 import tkinter as tk
+import copy
+
 
 class ChessBoard:
 
@@ -33,6 +35,27 @@ class ChessBoard:
             row = 8 - int(notation[1])
             return self.board[row][col]
 
+    def find_king(self, colour):
+        for row in range(8):
+            for col in range(8):
+                piece = self.board[row][col]
+                if isinstance(piece, King) and piece.colour == colour:
+                    return (row, col)
+        return None
+    
+    def is_in_check(self, colour):
+        king_pos = self.find_king(colour)
+        if king_pos is None:
+            return True  # king missing is definitely bad
+
+        for row in range(8):
+            for col in range(8):
+                piece = self.board[row][col]
+                if piece and piece.colour != colour:
+                    if king_pos in piece.valid_moves((row, col), self.board):
+                        return True
+        return False
+
 
     def pos(self, notation):
         col = self.file_to_col[notation[0].upper()]
@@ -50,6 +73,7 @@ class Piece:
     def __init__(self, name, colour):
         self.name = name
         self.colour = colour
+        self.value = 0
 
     def __str__(self):
         return self.name.upper() if self.colour == 'white' else self.name.lower()
@@ -61,6 +85,7 @@ class Piece:
 class Pawn(Piece):
     def __init__(self, colour):
         super().__init__('P', colour)
+        self.value = 1
 
     def valid_moves(self, position, board):
         row, col = position
@@ -79,9 +104,9 @@ class Pawn(Piece):
 
         # taking diagonal
         if 0 <= row + direction < 8:
-            if 0 <= col - 1 < 8 and board[row + direction][col - 1] != None:
+            if 0 <= col - 1 < 8 and board[row + direction][col - 1] != None and board[row + direction][col - 1].colour != self.colour:
                 moves.append((row + direction, col - 1))
-            if 0 <= col + 1 < 8 and board[row + direction][col +1] != None:
+            if 0 <= col + 1 < 8 and board[row + direction][col +1] != None and board[row + direction][col + 1].colour != self.colour:
                 moves.append((row + direction, col + 1))
 
         return moves
@@ -89,6 +114,7 @@ class Pawn(Piece):
 class Knight(Piece):
     def __init__(self, colour):
         super().__init__('N', colour)
+        self.value = 3
 
     def valid_moves(self, position, board):
         row, col = position
@@ -111,6 +137,7 @@ class Knight(Piece):
 class Bishop(Piece):
     def __init__(self, colour):
         super().__init__('B', colour)
+        self.value = 3
 
     def valid_moves(self, position, board):
         row, col = position
@@ -139,6 +166,7 @@ class Bishop(Piece):
 class Rook(Piece):
     def __init__(self, colour):
         super().__init__('R', colour)
+        self.value = 5
 
     def valid_moves(self, position, board):
         row, col = position
@@ -164,6 +192,7 @@ class Rook(Piece):
 class Queen(Piece):
     def __init__(self, colour):
         super().__init__('Q', colour)
+        self.value = 9
 
     def valid_moves(self, position, board):
         row, col = position
@@ -180,6 +209,7 @@ class Queen(Piece):
 class King(Piece):
     def __init__(self, colour):
         super().__init__('K', colour)
+        self.value = 1000
 
     def valid_moves(self, position, board):
         row, col = position
@@ -199,6 +229,73 @@ class King(Piece):
                     moves.append((new_row, new_col))
 
         return moves
+
+
+
+# bottttttttttt
+
+def evaluate_board(board):
+    total = 0
+    for row in board.board:
+        for piece in row:
+            if piece:
+                total += piece.value if piece.colour == 'black' else -piece.value
+    return total
+
+
+def minimax(board, depth, maximizing):
+    if depth == 0:
+        return evaluate_board(board), None
+
+    best_score = float('-inf') if maximizing else float('inf')
+    best_move = None
+
+    for row in range(8):
+        for col in range(8):
+            piece = board.board[row][col]
+            if piece and ((piece.colour == 'black') == maximizing):
+                for to_row, to_col in piece.valid_moves((row, col), board.board):
+                    test_board = copy.deepcopy(board)
+                    test_piece = test_board.board[row][col]
+                    test_board.board[to_row][to_col] = test_piece
+                    test_board.board[row][col] = None
+
+                    if test_board.is_in_check(piece.colour):
+                        continue
+
+                    score, _ = minimax(test_board, depth - 1, not maximizing)
+
+                    if maximizing:
+                        if score > best_score:
+                            best_score = score
+                            best_move = (row, col, to_row, to_col)
+                    else:
+                        if score < best_score:
+                            best_score = score
+                            best_move = (row, col, to_row, to_col)
+
+    return best_score, best_move
+
+
+def botCalcMove(board):
+    _, best_move = minimax(board, 3, True)
+
+    if best_move:
+        from_row, from_col, to_row, to_col = best_move
+        board.board[to_row][to_col] = board.board[from_row][from_col]
+        board.board[from_row][from_col] = None
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 board = ChessBoard()
@@ -232,6 +329,21 @@ while True:
         continue
 
 
-    # actually moving the piece
+    # simulate move
+    saved_to = board.board[to_pos[0]][to_pos[1]]
     board.board[to_pos[0]][to_pos[1]] = piece
     board.board[from_pos[0]][from_pos[1]] = None
+
+    if board.is_in_check('white'):
+        print("You can't move into check.")
+        # undo move
+        board.board[from_pos[0]][from_pos[1]] = piece
+        board.board[to_pos[0]][to_pos[1]] = saved_to
+        continue
+
+
+
+
+    # bot turn
+    botCalcMove(board)
+    # check for checkmate
