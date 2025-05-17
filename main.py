@@ -34,6 +34,22 @@ class ChessBoard:
             col = self.file_to_col[notation[0].upper()]
             row = 8 - int(notation[1])
             return self.board[row][col]
+        
+
+    def has_legal_moves(self, colour):
+        for row in range(8):
+            for col in range(8):
+                piece = self.board[row][col]
+                if piece and piece.colour == colour:
+                    for move in piece.valid_moves((row, col), self.board):
+                        # simulate the move
+                        temp_board = copy.deepcopy(self)
+                        temp_board.board[move[0]][move[1]] = temp_board.board[row][col]
+                        temp_board.board[row][col] = None
+                        if not temp_board.is_in_check(colour):
+                            return True
+        return False
+
 
     def find_king(self, colour):
         for row in range(8):
@@ -285,6 +301,9 @@ def botCalcMove(board):
         board.board[to_row][to_col] = board.board[from_row][from_col]
         board.board[from_row][from_col] = None
 
+        if board.is_in_check('white'):
+            print("White is in check!")
+
 
 
 
@@ -341,9 +360,26 @@ while True:
         board.board[to_pos[0]][to_pos[1]] = saved_to
         continue
 
+    if board.is_in_check('black'):
+        print("Black is in check!")
+
+    if not board.has_legal_moves('black'):
+        if board.is_in_check('black'):
+            print("Checkmate! White wins.")
+        else:
+            print("Stalemate! It's a draw.")
+        break
+
 
 
 
     # bot turn
     botCalcMove(board)
     # check for checkmate
+
+    if not board.has_legal_moves('white'):
+        if board.is_in_check('white'):
+            print("Checkmate! Black wins.")
+        else:
+            print("Stalemate! It's a draw.")
+        break
